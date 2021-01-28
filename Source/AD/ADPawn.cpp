@@ -22,6 +22,15 @@ AADPawn::AADPawn()
 	};
 	static FConstructorStatics ConstructorStatics;
 
+	// set our turn rates for input
+	BaseTurnRate = 45.f;
+	BaseLookUpRate = 45.f;
+
+	// Don't rotate when the controller rotates. Let that just affect the camera.
+	bUseControllerRotationPitch = true;
+	bUseControllerRotationYaw = true;
+	bUseControllerRotationRoll = false;
+
 	// Create static mesh component
 	PlaneMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PlaneMesh0"));
 	PlaneMesh->SetStaticMesh(ConstructorStatics.PlaneMesh.Get());	// Set static mesh
@@ -30,10 +39,13 @@ AADPawn::AADPawn()
 	// Create a spring arm component
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm0"));
 	SpringArm->SetupAttachment(RootComponent);	// Attach SpringArm to RootComponent
-	SpringArm->TargetArmLength = 160.0f; // The camera follows at this distance behind the character	
+	SpringArm->TargetArmLength = 400.f;
+	SpringArm->bUsePawnControlRotation = true;
+	SpringArm->SetRelativeRotation(FRotator(-60.f, 0.f, 0.f));
 	SpringArm->SocketOffset = FVector(0.f,0.f,60.f);
-	SpringArm->bEnableCameraLag = false;	// Do not allow camera to lag
+	SpringArm->bEnableCameraLag = true;	// Do not allow camera to lag
 	SpringArm->CameraLagSpeed = 15.f;
+	SpringArm->bDoCollisionTest = false;
 
 	// Create camera component 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera0"));
@@ -84,12 +96,29 @@ void AADPawn::SetupPlayerInputComponent(class UInputComponent* PlayerInputCompon
 	check(PlayerInputComponent);
 
 	// Bind our control axis' to callback functions
-	PlayerInputComponent->BindAxis("Thrust", this, &AADPawn::ThrustInput);
-	PlayerInputComponent->BindAxis("MoveUp", this, &AADPawn::MoveUpInput);
-	PlayerInputComponent->BindAxis("MoveRight", this, &AADPawn::MoveRightInput);
+	PlayerInputComponent->BindAxis("Sprint", this, &AADPawn::Sprint);
+	PlayerInputComponent->BindAxis("MoveForward", this, &AADPawn::MoveForward);
+	PlayerInputComponent->BindAxis("MoveRight", this, &AADPawn::MoveRight);
+	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
+	PlayerInputComponent->BindAxis("TurnRate", this, &AADPawn::TurnRate);
+	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("LookUpRate", this, &AADPawn::LookUpRate);
 }
 
-void AADPawn::ThrustInput(float Val)
+void AADPawn::Sprint(float Val)
+{
+	// Target pitch speed is based in input
+	float TargetPitchSpeed = (Val * TurnSpeed * -1.f);
+
+	// When steering, we decrease pitch slightly
+	TargetPitchSpeed += (FMath::Abs(CurrentYawSpeed) * -0.2f);
+
+	// Smoothly interpolate to target pitch speed
+	CurrentPitchSpeed = FMath::FInterpTo(CurrentPitchSpeed, TargetPitchSpeed, GetWorld()->GetDeltaSeconds(), 2.f);
+
+}
+
+void AADPawn::MoveForward(float Val)
 {
 	// Is there any input?
 	bool bHasInput = !FMath::IsNearlyEqual(Val, 0.f);
@@ -101,19 +130,7 @@ void AADPawn::ThrustInput(float Val)
 	CurrentForwardSpeed = FMath::Clamp(NewForwardSpeed, MinSpeed, MaxSpeed);
 }
 
-void AADPawn::MoveUpInput(float Val)
-{
-	// Target pitch speed is based in input
-	float TargetPitchSpeed = (Val * TurnSpeed * -1.f);
-
-	// When steering, we decrease pitch slightly
-	TargetPitchSpeed += (FMath::Abs(CurrentYawSpeed) * -0.2f);
-
-	// Smoothly interpolate to target pitch speed
-	CurrentPitchSpeed = FMath::FInterpTo(CurrentPitchSpeed, TargetPitchSpeed, GetWorld()->GetDeltaSeconds(), 2.f);
-}
-
-void AADPawn::MoveRightInput(float Val)
+void AADPawn::MoveRight(float Val)
 {
 	// Target yaw speed is based on input
 	float TargetYawSpeed = (Val * TurnSpeed);
@@ -130,4 +147,16 @@ void AADPawn::MoveRightInput(float Val)
 
 	// Smoothly interpolate roll speed
 	CurrentRollSpeed = FMath::FInterpTo(CurrentRollSpeed, TargetRollSpeed, GetWorld()->GetDeltaSeconds(), 2.f);
+}
+
+void AADPawn::TurnRate(float Rate)
+{
+	// calculate delta for this frame from the rate information
+	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
+}
+
+void AADPawn::LookUpRate(float Rate)
+{
+	// calculate delta for this frame from the rate information
+	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 }
