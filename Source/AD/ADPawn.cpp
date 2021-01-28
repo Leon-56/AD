@@ -43,7 +43,7 @@ AADPawn::AADPawn()
 	SpringArm->bUsePawnControlRotation = true;
 	SpringArm->SetRelativeRotation(FRotator(-60.f, 0.f, 0.f));
 	SpringArm->SocketOffset = FVector(0.f,0.f,60.f);
-	SpringArm->bEnableCameraLag = true;	// Do not allow camera to lag
+	SpringArm->bEnableCameraLag = false;	// Do not allow camera to lag
 	SpringArm->CameraLagSpeed = 15.f;
 	SpringArm->bDoCollisionTest = false;
 
