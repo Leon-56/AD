@@ -1,0 +1,19 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "{109CCB4A-4ACD-0469-F544-77B6A01A28CB}",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "AD",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "HoudiniEngine",
+			"Enabled": true
+		}
+	]
+}
