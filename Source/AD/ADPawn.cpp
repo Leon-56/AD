@@ -16,7 +16,7 @@ AADPawn::AADPawn()
 	{
 		ConstructorHelpers::FObjectFinderOptional<UStaticMesh> PlaneMesh;
 		FConstructorStatics()
-			: PlaneMesh(TEXT("/Game/Flying/Meshes/UFO.UFO"))
+			: PlaneMesh(TEXT("/Game/01_Art/01_Player/Mesh/UFO.UFO"))
 		{
 		}
 	};
