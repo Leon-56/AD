@@ -24,6 +24,14 @@ class AADPawn : public APawn
 public:
 	AADPawn();
 
+	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
+	float BaseTurnRate;
+
+	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
+	float BaseLookUpRate;
+
 	// Begin AActor overrides
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void NotifyHit(class UPrimitiveComponent* MyComp, class AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit) override;
@@ -36,13 +44,17 @@ protected:
 	// End APawn overrides
 
 	/** Bound to the thrust axis */
-	void ThrustInput(float Val);
+	void Sprint(float Val);
 	
 	/** Bound to the vertical axis */
-	void MoveUpInput(float Val);
+	void MoveForward(float Val);
 
 	/** Bound to the horizontal axis */
-	void MoveRightInput(float Val);
+	void MoveRight(float Val);
+
+	void TurnRate(float Rate);
+
+	void LookUpRate(float Rate);
 
 private:
 
