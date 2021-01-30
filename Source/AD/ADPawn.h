@@ -57,11 +57,11 @@ protected:
 	void LookUpRate(float Rate);
 
 	/** How quickly forward speed changes */
-	UPROPERTY(Category=Plane, BlueprintReadWrite)
+	UPROPERTY(Category=Plane, BlueprintReadWrite, EditAnywhere)
 	float Acceleration;
 
 	/** How quickly pawn can steer */
-	UPROPERTY(Category=Plane, BlueprintReadWrite)
+	UPROPERTY(Category=Plane, BlueprintReadWrite, EditAnywhere)
 	float TurnSpeed;
 
 	/** Max forward speed */
